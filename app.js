@@ -18,25 +18,85 @@ const lottoMachineEl = document.getElementById("lottoMachine");
 const tumblerEl = document.getElementById("tumbler");
 const chuteBallEl = document.getElementById("chuteBall");
 const drawStageEl = document.querySelector(".draw-stage");
+const birthdayInputEl = document.getElementById("birthdayInput");
+const birthdayDisplayEl = document.getElementById("birthdayDisplay");
 
 let currentNumbers = [];
 let currentBonus = null;
+let currentBirthday = null;
 let isDrawing = false;
 let sessionDrawCount = 0;
 
-function getBallColorClass(num) {
-  if (num <= 10) return "yellow";
-  if (num <= 20) return "blue";
-  if (num <= 30) return "red";
-  if (num <= 40) return "gray";
-  return "green";
+birthdayInputEl.max = new Date().toISOString().slice(0, 10);
+
+function parseBirthday(value) {
+  if (!value) return null;
+  const [y, m, d] = value.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+    return null;
+  }
+  if (date > new Date()) return null;
+  return date;
 }
 
-function generateDraw() {
+function formatBirthday(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}.${m}.${d}`;
+}
+
+function getBirthdayLuckyNumbers(date) {
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const nums = new Set();
+
+  if (m >= MIN && m <= MAX) nums.add(m);
+  if (d >= MIN && d <= MAX) nums.add(d);
+
+  const dayMonth = m + d;
+  if (dayMonth >= MIN && dayMonth <= MAX) nums.add(dayMonth);
+
+  const yearMod = y % MAX || MAX;
+  nums.add(yearMod);
+
+  const digitSum = String(y)
+    .split("")
+    .reduce((sum, ch) => sum + Number(ch), 0);
+  if (digitSum >= MIN && digitSum <= MAX) nums.add(digitSum);
+
+  return [...nums];
+}
+
+function updateBirthdayState() {
+  const date = parseBirthday(birthdayInputEl.value);
+  currentBirthday = date;
+
+  if (date) {
+    birthdayDisplayEl.textContent = formatBirthday(date);
+    birthdayDisplayEl.classList.add("is-set");
+    if (!isDrawing) drawBtn.disabled = false;
+  } else {
+    birthdayDisplayEl.textContent = "NOT SET";
+    birthdayDisplayEl.classList.remove("is-set");
+    drawBtn.disabled = true;
+  }
+}
+
+function generateDraw(birthday) {
   const pool = Array.from({ length: MAX }, (_, i) => i + MIN);
   const main = [];
+  const lucky = getBirthdayLuckyNumbers(birthday).filter((n) => pool.includes(n));
 
-  for (let i = 0; i < COUNT; i++) {
+  if (lucky.length > 0) {
+    const pick = lucky[Math.floor(Math.random() * lucky.length)];
+    main.push(pick);
+    pool.splice(pool.indexOf(pick), 1);
+  }
+
+  for (let i = main.length; i < COUNT; i++) {
     const idx = Math.floor(Math.random() * pool.length);
     main.push(pool.splice(idx, 1)[0]);
   }
@@ -209,9 +269,18 @@ async function animateDraw(main, bonus) {
 
 async function draw() {
   if (isDrawing) return;
+
+  const birthday = parseBirthday(birthdayInputEl.value);
+  if (!birthday) {
+    showToast("ENTER YOUR BIRTHDAY");
+    return;
+  }
+  currentBirthday = birthday;
+
   isDrawing = true;
   drawBtn.disabled = true;
   copyBtn.disabled = true;
+  birthdayInputEl.disabled = true;
 
   const sets = Math.min(10, Math.max(1, parseInt(setCountEl.value, 10) || 1));
 
@@ -228,7 +297,7 @@ async function draw() {
     }
 
     setStatus("DRUM ACTIVE");
-    const { main, bonus } = generateDraw();
+    const { main, bonus } = generateDraw(birthday);
     currentNumbers = main;
     currentBonus = bonus;
     await animateDraw(main, bonus);
@@ -241,6 +310,7 @@ async function draw() {
 
   copyBtn.disabled = false;
   drawBtn.disabled = false;
+  birthdayInputEl.disabled = false;
   isDrawing = false;
 }
 
@@ -258,10 +328,21 @@ async function copyNumbers() {
 
 drawBtn.addEventListener("click", draw);
 copyBtn.addEventListener("click", copyNumbers);
+birthdayInputEl.addEventListener("change", updateBirthdayState);
+birthdayInputEl.addEventListener("input", updateBirthdayState);
 clearHistoryBtn.addEventListener("click", () => {
   historyList.innerHTML = "";
   historySection.hidden = true;
 });
 
+function getBallColorClass(num) {
+  if (num <= 10) return "yellow";
+  if (num <= 20) return "blue";
+  if (num <= 30) return "red";
+  if (num <= 40) return "gray";
+  return "green";
+}
+
 initTumbler();
 resetBalls();
+updateBirthdayState();

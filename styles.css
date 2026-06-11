@@ -184,6 +184,45 @@ body {
   border-color: var(--on-dark);
 }
 
+.birthday-panel {
+  margin-bottom: var(--spacing-xl);
+}
+
+.birthday-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.birthday-desc {
+  margin-bottom: var(--spacing-lg);
+}
+
+.birthday-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-width: 280px;
+}
+
+#birthdayDisplay.is-set {
+  color: var(--on-dark);
+}
+
+.text-input-date {
+  width: 100%;
+  text-align: left;
+  color-scheme: dark;
+}
+
+.text-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .draw-stage {
   margin-bottom: var(--spacing-xl);
 }
