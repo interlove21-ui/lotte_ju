@@ -1,4 +1,5 @@
 const MODEL = "gemini-2.5-flash-lite";
+const { getGeminiApiKey } = require("../lib/env");
 
 const SYSTEM_PROMPT = `당신은 한국 로또 6/45 번호 추천 전문 챗봇입니다.
 사용자의 생년월일, 오늘 날짜, 오늘의 운세를 반영하여 로또 번호를 추천합니다.
@@ -113,10 +114,11 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
     return res.status(503).json({
-      error: "GEMINI_API_KEY가 Vercel 환경변수에 설정되지 않았습니다. Vercel → Settings → Environment Variables에서 추가 후 재배포해 주세요.",
+      error:
+        "Gemini API 키를 찾을 수 없습니다. Vercel → Settings → Environment Variables에 GEMINI_API_KEY를 추가하고 Production 환경에 체크한 뒤, Deployments에서 Redeploy(재배포)해 주세요.",
       code: "MISSING_API_KEY",
     });
   }

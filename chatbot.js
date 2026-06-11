@@ -74,8 +74,13 @@ async function checkApiHealth() {
     const res = await fetch("/api/health");
     const data = await res.json();
     if (!data.geminiConfigured) {
+      const envInfo = data.envPresent
+        ? Object.entries(data.envPresent)
+            .map(([k, v]) => `${k}: ${v ? "OK" : "없음"}`)
+            .join(" · ")
+        : "";
       showChatAlert(
-        "GEMINI_API_KEY가 Vercel에 설정되지 않았습니다. Vercel → Settings → Environment Variables에 키를 추가한 뒤 Redeploy 해 주세요."
+        `Gemini API 키가 서버에 전달되지 않았습니다. Vercel에서 GEMINI_API_KEY를 Production에 등록한 뒤 Redeploy(재배포)하세요. ${envInfo ? `[${envInfo}]` : ""}`
       );
     }
   } catch {
