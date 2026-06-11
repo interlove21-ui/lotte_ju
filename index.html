@@ -11,9 +11,9 @@
 </head>
 <body>
   <nav class="top-nav">
-    <span class="nav-link">DRAW</span>
+    <a class="nav-link" href="#chatSection">CHAT</a>
     <span class="wordmark">LOTTO</span>
-    <span class="nav-link">ARCHIVE</span>
+    <a class="nav-link" href="#winnersSection">ARCHIVE</a>
   </nav>
 
   <main class="container">
@@ -41,6 +41,8 @@
         <span class="caption">POWERED BY GEMINI</span>
       </div>
       <p class="body-sm chat-desc">생년월일과 오늘의 운세를 반영해 AI가 번호를 추천하고, 각 번호의 이유를 설명합니다.</p>
+
+      <div class="chat-alert" id="chatAlert" hidden></div>
 
       <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
 

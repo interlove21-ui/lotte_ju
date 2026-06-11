@@ -2,6 +2,7 @@ const chatMessagesEl = document.getElementById("chatMessages");
 const chatInputEl = document.getElementById("chatInput");
 const chatSendBtn = document.getElementById("chatSendBtn");
 const chatRecommendBtn = document.getElementById("chatRecommendBtn");
+const chatAlertEl = document.getElementById("chatAlert");
 
 let isChatLoading = false;
 
@@ -53,6 +54,35 @@ function getTodayLabel() {
   });
 }
 
+function showChatAlert(message) {
+  chatAlertEl.textContent = message;
+  chatAlertEl.hidden = false;
+}
+
+function hideChatAlert() {
+  chatAlertEl.hidden = true;
+  chatAlertEl.textContent = "";
+}
+
+async function checkApiHealth() {
+  if (window.location.protocol === "file:") {
+    showChatAlert("로컬 파일로 열면 챗봇이 동작하지 않습니다. Vercel 배포 URL(https://lotte-ju.vercel.app)에서 이용해 주세요.");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/health");
+    const data = await res.json();
+    if (!data.geminiConfigured) {
+      showChatAlert(
+        "GEMINI_API_KEY가 Vercel에 설정되지 않았습니다. Vercel → Settings → Environment Variables에 키를 추가한 뒤 Redeploy 해 주세요."
+      );
+    }
+  } catch {
+    showChatAlert("API 서버에 연결할 수 없습니다. 배포가 완료됐는지 확인해 주세요.");
+  }
+}
+
 function createMiniBall(num, isBonus = false) {
   const el = document.createElement("span");
   el.className = `mini-ball chat-mini-ball${isBonus ? " bonus-mini" : ""}`;
@@ -77,6 +107,8 @@ function appendTextMessage(role, text) {
 }
 
 function renderRecommendation(data) {
+  hideChatAlert();
+
   const bubble = document.createElement("div");
   bubble.className = "chat-recommendation";
 
@@ -173,9 +205,18 @@ async function requestRecommendation(userMessage = "") {
 
     hideTyping();
 
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      appendTextMessage("assistant", "서버 응답을 읽을 수 없습니다.");
+      return;
+    }
 
     if (!res.ok) {
+      if (data.code === "MISSING_API_KEY") {
+        showChatAlert(data.error);
+      }
       appendTextMessage("assistant", data.error || "추천을 받지 못했습니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
@@ -185,7 +226,7 @@ async function requestRecommendation(userMessage = "") {
     hideTyping();
     appendTextMessage(
       "assistant",
-      "서버에 연결할 수 없습니다. Vercel에 배포된 환경에서 이용해 주세요."
+      "서버에 연결할 수 없습니다. Vercel 배포 URL에서 이용해 주세요."
     );
   } finally {
     setChatLoading(false);
@@ -213,3 +254,5 @@ appendTextMessage(
   "assistant",
   "안녕하세요. 생년월일을 입력한 뒤 「번호 추천받기」를 누르면, 오늘의 운세와 생일을 반영한 로또 번호를 추천해 드립니다."
 );
+
+checkApiHealth();

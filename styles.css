@@ -142,6 +142,7 @@ body {
   text-transform: uppercase;
   color: var(--muted);
   width: 80px;
+  text-decoration: none;
 }
 
 .nav-link:first-child {
@@ -687,6 +688,17 @@ body {
 
 .chat-desc {
   margin-bottom: var(--spacing-lg);
+}
+
+.chat-alert {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface-soft);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--body-strong);
+  line-height: 1.5;
 }
 
 .chat-messages {
