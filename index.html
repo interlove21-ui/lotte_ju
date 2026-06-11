@@ -35,6 +35,31 @@
       </label>
     </section>
 
+    <section class="chat-panel surface-card" id="chatSection">
+      <div class="chat-header">
+        <span class="title-sm">LOTTO ADVISOR</span>
+        <span class="caption">POWERED BY GEMINI</span>
+      </div>
+      <p class="body-sm chat-desc">생년월일과 오늘의 운세를 반영해 AI가 번호를 추천하고, 각 번호의 이유를 설명합니다.</p>
+
+      <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+
+      <div class="chat-actions">
+        <button type="button" class="btn btn-primary" id="chatRecommendBtn">번호 추천받기</button>
+      </div>
+
+      <div class="chat-input-row">
+        <input
+          type="text"
+          id="chatInput"
+          class="text-input chat-text-input"
+          placeholder="추가로 궁금한 점을 입력하세요"
+          maxlength="200"
+        >
+        <button type="button" class="btn btn-primary chat-send-btn" id="chatSendBtn">SEND</button>
+      </div>
+    </section>
+
     <section class="draw-stage surface-card" aria-live="polite">
       <div class="stage-meta">
         <span class="caption" id="drawRound">ROUND —</span>
@@ -125,6 +150,7 @@
 
   <script src="lotto-data.js"></script>
   <script src="app.js"></script>
+  <script src="chatbot.js"></script>
   <script src="winners.js"></script>
 </body>
 </html>
