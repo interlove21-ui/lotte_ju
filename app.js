@@ -312,6 +312,10 @@ async function draw() {
   drawBtn.disabled = false;
   birthdayInputEl.disabled = false;
   isDrawing = false;
+
+  if (typeof showSignupModal === "function") {
+    setTimeout(showSignupModal, 600);
+  }
 }
 
 async function copyNumbers() {
