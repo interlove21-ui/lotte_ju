@@ -6,7 +6,6 @@ const ballsEl = document.getElementById("balls");
 const bonusBallEl = document.getElementById("bonusBall");
 const drawBtn = document.getElementById("drawBtn");
 const copyBtn = document.getElementById("copyBtn");
-const setCountEl = document.getElementById("setCount");
 const historySection = document.getElementById("historySection");
 const historyList = document.getElementById("historyList");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
@@ -17,13 +16,17 @@ const drawRoundEl = document.getElementById("drawRound");
 const lottoMachineEl = document.getElementById("lottoMachine");
 const tumblerEl = document.getElementById("tumbler");
 const chuteBallEl = document.getElementById("chuteBall");
-const drawStageEl = document.querySelector(".draw-stage");
+const drawStageEl = document.querySelector(".main-draw");
 const birthdayInputEl = document.getElementById("birthdayInput");
 const birthdayDisplayEl = document.getElementById("birthdayDisplay");
+const fortunePanelEl = document.getElementById("fortunePanel");
+const fortuneTextEl = document.getElementById("fortuneText");
+const fortuneSummaryEl = document.getElementById("fortuneSummary");
+const fortuneReasonsEl = document.getElementById("fortuneReasons");
+const fortuneBonusEl = document.getElementById("fortuneBonus");
 
 let currentNumbers = [];
 let currentBonus = null;
-let currentBirthday = null;
 let isDrawing = false;
 let sessionDrawCount = 0;
 
@@ -33,9 +36,7 @@ function parseBirthday(value) {
   if (!value) return null;
   const [y, m, d] = value.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
-    return null;
-  }
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return null;
   if (date > new Date()) return null;
   return date;
 }
@@ -47,6 +48,10 @@ function formatBirthday(date) {
   return `${y}.${m}.${d}`;
 }
 
+function formatBirthdayForApi(date) {
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
 function getBirthdayLuckyNumbers(date) {
   const y = date.getFullYear();
   const m = date.getMonth() + 1;
@@ -55,16 +60,10 @@ function getBirthdayLuckyNumbers(date) {
 
   if (m >= MIN && m <= MAX) nums.add(m);
   if (d >= MIN && d <= MAX) nums.add(d);
-
   const dayMonth = m + d;
   if (dayMonth >= MIN && dayMonth <= MAX) nums.add(dayMonth);
-
-  const yearMod = y % MAX || MAX;
-  nums.add(yearMod);
-
-  const digitSum = String(y)
-    .split("")
-    .reduce((sum, ch) => sum + Number(ch), 0);
+  nums.add(y % MAX || MAX);
+  const digitSum = String(y).split("").reduce((sum, ch) => sum + Number(ch), 0);
   if (digitSum >= MIN && digitSum <= MAX) nums.add(digitSum);
 
   return [...nums];
@@ -72,7 +71,6 @@ function getBirthdayLuckyNumbers(date) {
 
 function updateBirthdayState() {
   const date = parseBirthday(birthdayInputEl.value);
-  currentBirthday = date;
 
   if (date) {
     birthdayDisplayEl.textContent = formatBirthday(date);
@@ -104,10 +102,7 @@ function generateDraw(birthday) {
   const bonusIdx = Math.floor(Math.random() * pool.length);
   const bonus = pool[bonusIdx];
 
-  return {
-    main: main.sort((a, b) => a - b),
-    bonus,
-  };
+  return { main: main.sort((a, b) => a - b), bonus };
 }
 
 function initTumbler() {
@@ -128,8 +123,6 @@ function resetBalls() {
   for (let i = 0; i < COUNT; i++) {
     const slot = document.createElement("div");
     slot.className = "ball-slot";
-    slot.dataset.index = String(i);
-
     const ball = document.createElement("div");
     ball.className = "ball placeholder";
     ball.textContent = "—";
@@ -140,6 +133,7 @@ function resetBalls() {
   bonusBallEl.className = "ball placeholder bonus-ball";
   bonusBallEl.textContent = "—";
   boardStepEl.textContent = "";
+  fortunePanelEl.hidden = true;
 }
 
 function setStatus(text) {
@@ -157,6 +151,8 @@ function showToast(message) {
   }, 2200);
 }
 
+window.showToast = showToast;
+
 function formatTime(date) {
   return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
 }
@@ -170,7 +166,6 @@ function createMiniBall(num, isBonus = false) {
 
 function addHistoryEntry(main, bonus) {
   historySection.hidden = false;
-
   const li = document.createElement("li");
   li.className = "history-item";
 
@@ -181,11 +176,9 @@ function addHistoryEntry(main, bonus) {
   const nums = document.createElement("span");
   nums.className = "history-numbers";
   main.forEach((n) => nums.appendChild(createMiniBall(n)));
-
   const plus = document.createElement("span");
   plus.className = "history-plus";
   plus.textContent = "+";
-
   nums.append(plus, createMiniBall(bonus, true));
 
   li.append(time, nums);
@@ -216,13 +209,12 @@ async function animateChute(num) {
 async function revealBall(slot, num, label) {
   const ball = slot.querySelector(".ball");
   boardStepEl.textContent = label.toUpperCase();
-  setStatus(`${label} DRAWING`);
+  setStatus(`${label} 추첨 중`);
 
   slot.classList.add("active");
   await animateChute(num);
   ball.classList.remove("placeholder");
   ball.classList.add("rolling");
-
   await rollNumber(ball, num);
   ball.classList.remove("rolling");
   ball.classList.add("revealed", getBallColorClass(num));
@@ -241,12 +233,11 @@ async function animateDraw(main, bonus) {
 
   for (let i = 0; i < COUNT; i++) {
     await sleep(i === 0 ? 500 : 350);
-    const slot = ballsEl.children[i];
-    await revealBall(slot, main[i], `${i + 1} BALL`);
+    await revealBall(ballsEl.children[i], main[i], `${i + 1}번`);
   }
 
   await sleep(600);
-  setStatus("BONUS DRAW");
+  setStatus("보너스 추첨");
   boardStepEl.textContent = "BONUS";
 
   const bonusSlot = bonusBallEl.closest(".ball-slot");
@@ -254,7 +245,6 @@ async function animateDraw(main, bonus) {
   await animateChute(bonus);
   bonusBallEl.classList.remove("placeholder");
   bonusBallEl.classList.add("rolling");
-
   await rollNumber(bonusBallEl, bonus);
   bonusBallEl.classList.remove("rolling");
   bonusBallEl.classList.add("revealed", getBallColorClass(bonus));
@@ -263,8 +253,75 @@ async function animateDraw(main, bonus) {
 
   lottoMachineEl.classList.remove("spinning");
   drawStageEl.classList.remove("drawing");
-  setStatus("COMPLETE");
+  setStatus("추첨 완료");
   boardStepEl.textContent = "DONE";
+}
+
+function renderFortune(data) {
+  fortunePanelEl.hidden = false;
+  fortuneTextEl.textContent = data.todayFortune;
+  fortuneSummaryEl.textContent = data.summary;
+
+  fortuneReasonsEl.innerHTML = "";
+  data.reasons.forEach(({ number, reason }) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="caption">${number}</span><span class="body-sm">${reason}</span>`;
+    fortuneReasonsEl.appendChild(li);
+  });
+
+  fortuneBonusEl.innerHTML = `<span class="caption">BONUS ${currentBonus}</span> ${data.bonusReason}`;
+}
+
+function renderFortuneFallback() {
+  fortunePanelEl.hidden = false;
+  fortuneTextEl.textContent =
+    "오늘은 차분한 마음으로 한 걸음씩 나아가면 좋은 하루입니다. 추첨된 번호에 긍정의 기운을 담아 보세요.";
+  fortuneSummaryEl.textContent = "생년월일을 반영한 오늘의 추첨 결과입니다.";
+  fortuneReasonsEl.innerHTML = "";
+  currentNumbers.forEach((n) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="caption">${n}</span><span class="body-sm">행운의 기운이 느껴지는 번호입니다.</span>`;
+    fortuneReasonsEl.appendChild(li);
+  });
+  fortuneBonusEl.innerHTML = `<span class="caption">BONUS ${currentBonus}</span> 보너스 번호에도 좋은 기운이 담겨 있습니다.`;
+}
+
+async function fetchFortune(birthday) {
+  setStatus("운세 분석 중");
+  fortunePanelEl.hidden = false;
+  fortuneTextEl.textContent = "AI가 오늘의 운세를 분석하고 있습니다...";
+  fortuneSummaryEl.textContent = "";
+  fortuneReasonsEl.innerHTML = "";
+  fortuneBonusEl.textContent = "";
+
+  try {
+    const res = await fetch("/api/fortune", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        birthday: formatBirthdayForApi(birthday),
+        luckyNumbers: getBirthdayLuckyNumbers(birthday),
+        numbers: currentNumbers,
+        bonus: currentBonus,
+        today: new Date().toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "long",
+        }),
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      renderFortuneFallback();
+      return;
+    }
+
+    renderFortune(data);
+  } catch {
+    renderFortuneFallback();
+  }
 }
 
 async function draw() {
@@ -272,41 +329,27 @@ async function draw() {
 
   const birthday = parseBirthday(birthdayInputEl.value);
   if (!birthday) {
-    showToast("ENTER YOUR BIRTHDAY");
+    showToast("생년월일을 입력해 주세요");
     return;
   }
-  currentBirthday = birthday;
 
   isDrawing = true;
   drawBtn.disabled = true;
   copyBtn.disabled = true;
   birthdayInputEl.disabled = true;
 
-  const sets = Math.min(10, Math.max(1, parseInt(setCountEl.value, 10) || 1));
+  sessionDrawCount += 1;
+  drawRoundEl.textContent = `ROUND ${sessionDrawCount}`;
+  resetBalls();
 
-  for (let s = 0; s < sets; s++) {
-    sessionDrawCount += 1;
-    drawRoundEl.textContent = `ROUND ${sessionDrawCount}`;
+  setStatus("추첨기 가동");
+  const { main, bonus } = generateDraw(birthday);
+  currentNumbers = main;
+  currentBonus = bonus;
 
-    if (s > 0) {
-      resetBalls();
-      setStatus("NEXT SET");
-      await sleep(500);
-    } else {
-      resetBalls();
-    }
-
-    setStatus("DRUM ACTIVE");
-    const { main, bonus } = generateDraw(birthday);
-    currentNumbers = main;
-    currentBonus = bonus;
-    await animateDraw(main, bonus);
-    addHistoryEntry(main, bonus);
-
-    if (sets > 1 && s < sets - 1) {
-      await sleep(800);
-    }
-  }
+  await animateDraw(main, bonus);
+  addHistoryEntry(main, bonus);
+  await fetchFortune(birthday);
 
   copyBtn.disabled = false;
   drawBtn.disabled = false;
@@ -314,20 +357,27 @@ async function draw() {
   isDrawing = false;
 
   if (typeof showSignupModal === "function") {
-    setTimeout(showSignupModal, 600);
+    setTimeout(showSignupModal, 800);
   }
 }
 
 async function copyNumbers() {
   if (!currentNumbers.length || currentBonus === null) return;
-
   const text = `${currentNumbers.join(", ")} + ${currentBonus}`;
   try {
     await navigator.clipboard.writeText(text);
-    showToast("COPIED TO CLIPBOARD");
+    showToast("번호가 복사되었습니다");
   } catch {
-    showToast("COPY FAILED");
+    showToast("복사에 실패했습니다");
   }
+}
+
+function getBallColorClass(num) {
+  if (num <= 10) return "yellow";
+  if (num <= 20) return "blue";
+  if (num <= 30) return "red";
+  if (num <= 40) return "gray";
+  return "green";
 }
 
 drawBtn.addEventListener("click", draw);
@@ -338,14 +388,6 @@ clearHistoryBtn.addEventListener("click", () => {
   historyList.innerHTML = "";
   historySection.hidden = true;
 });
-
-function getBallColorClass(num) {
-  if (num <= 10) return "yellow";
-  if (num <= 20) return "blue";
-  if (num <= 30) return "red";
-  if (num <= 40) return "gray";
-  return "green";
-}
 
 initTumbler();
 resetBalls();

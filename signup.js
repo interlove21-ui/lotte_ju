@@ -1,5 +1,4 @@
 const STORAGE_KEY = "lotto_subscribed";
-const DISMISS_KEY = "lotto_signup_dismissed";
 
 const modalEl = document.getElementById("signupModal");
 const formEl = document.getElementById("signupForm");
@@ -15,12 +14,8 @@ function isSubscribed() {
   return localStorage.getItem(STORAGE_KEY) === "true";
 }
 
-function isDismissed() {
-  return sessionStorage.getItem(DISMISS_KEY) === "true";
-}
-
 function showSignupModal() {
-  if (isSubscribed() || isDismissed()) return;
+  if (isSubscribed()) return;
 
   modalEl.hidden = false;
   modalEl.setAttribute("aria-hidden", "false");
@@ -41,7 +36,6 @@ function showError(message) {
 }
 
 function dismissLater() {
-  sessionStorage.setItem(DISMISS_KEY, "true");
   hideSignupModal();
 }
 

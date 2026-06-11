@@ -181,8 +181,74 @@ body {
   padding: var(--spacing-lg);
 }
 
-.draw-stage.flash {
+.main-draw {
+  margin-bottom: var(--spacing-xl);
+}
+
+.main-draw.flash {
   border-color: var(--on-dark);
+}
+
+.draw-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.birthday-inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.fortune-panel {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--hairline);
+}
+
+.fortune-panel .caption {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+.fortune-summary {
+  margin: var(--spacing-md) 0;
+  color: var(--body-strong);
+}
+
+.fortune-reasons {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-md) 0;
+}
+
+.fortune-reasons li {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  gap: var(--spacing-sm);
+  align-items: start;
+}
+
+.fortune-reasons .caption {
+  color: var(--on-dark);
+  margin-bottom: 0;
+}
+
+.draw-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--hairline);
 }
 
 .birthday-panel {
@@ -222,10 +288,6 @@ body {
 .text-input:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.draw-stage {
-  margin-bottom: var(--spacing-xl);
 }
 
 .stage-meta {
@@ -1096,9 +1158,21 @@ body.modal-open {
     order: -1;
   }
 
-  .controls {
+  .draw-actions {
+    flex-direction: column;
+  }
+
+  .draw-actions .btn {
+    width: 100%;
+  }
+
+  .draw-top {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .birthday-field {
+    max-width: none;
   }
 
   .winner-item {

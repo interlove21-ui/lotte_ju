@@ -227,6 +227,9 @@ async function requestRecommendation(userMessage = "") {
     }
 
     renderRecommendation(data);
+    if (typeof showSignupModal === "function") {
+      setTimeout(showSignupModal, 600);
+    }
   } catch {
     hideTyping();
     appendTextMessage(
