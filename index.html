@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LOTTO 6/45</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=IBM+Plex+Mono:wght@400&family=Saira+Condensed:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="top-nav">
+    <span class="nav-link">DRAW</span>
+    <span class="wordmark">LOTTO</span>
+    <span class="nav-link">ARCHIVE</span>
+  </nav>
+
+  <main class="container">
+    <section class="hero-band">
+      <p class="caption">LOTTERY NUMBER GENERATOR</p>
+      <h1 class="display-xl">LOTTO 6/45</h1>
+      <p class="body-md hero-lead">1부터 45까지의 숫자 중 6개와 보너스 번호 1개를 무작위로 추첨합니다.</p>
+    </section>
+
+    <section class="draw-stage surface-card" aria-live="polite">
+      <div class="stage-meta">
+        <span class="caption" id="drawRound">ROUND —</span>
+        <span class="caption draw-status" id="drawStatus">READY</span>
+      </div>
+
+      <div class="stage-layout">
+        <div class="machine-wrap">
+          <div class="lotto-machine" id="lottoMachine">
+            <div class="machine-dome">
+              <div class="tumbler" id="tumbler" aria-hidden="true"></div>
+            </div>
+            <div class="machine-base">
+              <span class="caption">DRUM</span>
+            </div>
+            <div class="chute">
+              <div class="chute-ball" id="chuteBall" hidden></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-board">
+          <div class="board-header">
+            <span class="title-sm">WINNING NUMBERS</span>
+            <span class="caption" id="boardStep"></span>
+          </div>
+
+          <div class="ball-slots" id="balls"></div>
+
+          <div class="bonus-board" id="bonusRow">
+            <span class="bonus-plus">+</span>
+            <span class="caption bonus-label">BONUS</span>
+            <div class="ball-slot bonus-slot">
+              <div class="ball placeholder bonus-ball" id="bonusBall">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button type="button" class="btn btn-primary" id="drawBtn">START DRAW</button>
+      <button type="button" class="btn btn-primary" id="copyBtn" disabled>COPY</button>
+    </div>
+
+    <div class="options">
+      <label class="option">
+        <span class="caption">SETS</span>
+        <input type="number" class="text-input" id="setCount" min="1" max="10" value="1">
+      </label>
+    </div>
+
+    <section class="panel" id="historySection" hidden>
+      <h2 class="display-sm section-title">SESSION LOG</h2>
+      <ul class="history-list" id="historyList"></ul>
+      <button type="button" class="btn-text" id="clearHistoryBtn">CLEAR LOG</button>
+    </section>
+
+    <section class="panel winners-section" id="winnersSection">
+      <div class="winners-header">
+        <h2 class="display-sm section-title">HISTORICAL WINNERS</h2>
+        <span class="caption winners-meta" id="winnersMeta">LOADING</span>
+      </div>
+
+      <div class="winners-filters">
+        <label class="filter-field">
+          <span class="caption">ROUND</span>
+          <input type="number" class="text-input" id="drawSearch" min="1" placeholder="1227">
+        </label>
+        <label class="filter-field">
+          <span class="caption">NUMBER</span>
+          <input type="number" class="text-input" id="numberFilter" min="1" max="45" placeholder="1–45">
+        </label>
+        <button type="button" class="btn-text" id="resetFiltersBtn">RESET</button>
+      </div>
+
+      <ul class="winners-list" id="winnersList"></ul>
+      <button type="button" class="btn btn-primary btn-load-more" id="loadMoreBtn" hidden>LOAD MORE</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="body-sm">본 추첨기는 오락용이며, 실제 동행복권 추첨과 무관합니다.</p>
+    <span class="wordmark footer-wordmark">LOTTO</span>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-hidden="true"></div>
+
+  <script src="lotto-data.js"></script>
+  <script src="app.js"></script>
+  <script src="winners.js"></script>
+</body>
+</html>
